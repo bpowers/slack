@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nlopes/slack"
+	"github.com/bpowers/slack"
 )
 
 func main() {
