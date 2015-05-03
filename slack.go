@@ -44,11 +44,6 @@ func (api *Slack) GetInfo() Info {
 	return api.info
 }
 
-// Info structures can be quite large - allow users to clear them to save memory
-func (api *Slack) ClearInfo() {
-	api.info = Info{}
-}
-
 // AuthTest tests if the user is able to do authenticated requests or not
 func (api *Slack) AuthTest() (response *AuthTestResponse, error error) {
 	responseFull := &authTestResponseFull{}
