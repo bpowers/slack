@@ -82,30 +82,31 @@ func fixUrlPort(orig string) (string, error) {
 	return orig, nil
 }
 
-func (api *Slack) StartRTM(protocol, origin string) (*SlackWS, Info, error) {
+func (api *Slack) StartRTM(protocol, origin string) (*SlackWS, error) {
 	response := &infoResponseFull{}
 	err := parseResponse("rtm.start", url.Values{"token": {api.config.token}}, response, api.debug)
 	if err != nil {
-		return nil, Info{}, err
+		return nil, err
 	}
 	if !response.Ok {
-		return nil, Info{}, response.Error
+		return nil, response.Error
 	}
+	api.info = response.Info
 	// websocket.Dial does not accept url without the port (yet)
 	// Fixed by: https://github.com/golang/net/commit/5058c78c3627b31e484a81463acd51c7cecc06f3
 	// but slack returns the address with no port, so we have to fix it
-	response.Url, err = fixUrlPort(response.Url)
+	api.info.Url, err = fixUrlPort(api.info.Url)
 	if err != nil {
-		return nil, Info{}, err
+		return nil, err
 	}
 	api.config.protocol, api.config.origin = protocol, origin
 	wsApi := &SlackWS{Slack: *api}
-	wsApi.conn, err = websocket.Dial(response.Url, api.config.protocol, api.config.origin)
+	wsApi.conn, err = websocket.Dial(api.info.Url, api.config.protocol, api.config.origin)
 	if err != nil {
-		return nil, Info{}, err
+		return nil, err
 	}
 	wsApi.pings = make(map[int]time.Time)
-	return wsApi, response.Info, nil
+	return wsApi, nil
 }
 
 func (api *SlackWS) Ping() error {
